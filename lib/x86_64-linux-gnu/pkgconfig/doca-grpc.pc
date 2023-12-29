@@ -1,0 +1,11 @@
+prefix=/opt/mellanox/doca
+libdir=${prefix}/lib/x86_64-linux-gnu
+includedir=${prefix}/include
+
+Name: doca_grpc
+Description: DOCA (doca-grpc) pkg-config file.
+Version: 2.5.0108
+Requires: doca-grpc-libs
+Requires.private: libibverbs, libmlx5, json-c, protobuf, grpc++, libdpdk, doca
+Libs.private: -L${libdir} -l:libdoca_flow_grpc.a -Wl,--as-needed -pthread  -lm
+Cflags: -I${includedir}

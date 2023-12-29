@@ -1,0 +1,62 @@
+/*
+ * Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
+ *
+ * This software product is a proprietary product of NVIDIA CORPORATION &
+ * AFFILIATES (the "Company") and all right, title, and interest in and to the
+ * software product, including all associated intellectual property rights, are
+ * and shall remain exclusively with the Company.
+ *
+ * This software product is governed by the End User License Agreement
+ * provided with the software product.
+ *
+ */
+
+syntax = "proto3";
+
+/* Host (x86) -> DPU (Arm):
+ * ========================
+ * gRPC server that exposes the DOCA gRPC API to the host
+ * for remote boot/shutdown of DOCA gRPC Programs.
+ */
+service DocaOrchestrator {
+	/* Fetch the list of gRPC-Supported Programs */
+	rpc GetProgramList (ProgramListReq) returns (ProgramList);
+
+	/* Invoke a given gRPC-Supported program */
+	rpc Create (Args) returns (RichStatus);
+
+	/* Destroy a given gRPC-Supported program */
+	rpc Destroy (Uid) returns (Status);
+}
+
+/* Here for future compatibility */
+message ProgramListReq {
+}
+
+message ProgramList {
+	repeated string program_names = 1;
+}
+
+message Args {
+	string program_name = 1;
+	string cmdline = 2;
+	uint32 port = 3;
+}
+
+/*
+ * Uid will be a string to allow for an abstraction layer that hides the
+ * implementation details.
+ */
+message Uid {
+	string uid = 1;
+}
+
+message Status {
+	bool is_error = 1;
+	string error_msg = 2;
+}
+
+message RichStatus {
+	Uid uid = 1;
+	Status err_status = 2;
+}

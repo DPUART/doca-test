@@ -1,0 +1,11 @@
+prefix=/opt/mellanox/doca
+libdir=${prefix}/lib/x86_64-linux-gnu
+includedir=${prefix}/include
+
+Name: doca_grpc_libs
+Description: Internal-only DOCA pkg-config file. Not for direct use.
+Use doca-grpc instead of this file
+Version: 2.5.0108
+Libs: -Wl,--as-needed -L${libdir} -ldoca_flow_grpc
+Libs.private: -lstdc++
+Cflags: -I${includedir} -DALLOW_EXPERIMENTAL_API

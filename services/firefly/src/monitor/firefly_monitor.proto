@@ -1,0 +1,87 @@
+/*
+ * Copyright (c) 2022-2023 NVIDIA CORPORATION & AFFILIATES, ALL RIGHTS RESERVED.
+ *
+ * This software product is a proprietary product of NVIDIA CORPORATION &
+ * AFFILIATES (the "Company") and all right, title, and interest in and to the
+ * software product, including all associated intellectual property rights, are
+ * and shall remain exclusively with the Company.
+ *
+ * This software product is governed by the End User License Agreement
+ * provided with the software product.
+ *
+ */
+
+syntax = "proto3";
+
+/* Network port for Firefly */
+enum eNetworkPort
+{
+	k_Dummy = 0;
+
+	/* Default network port */
+	k_DocaFirefly = 25600;
+};
+
+/* Host (x86) -> DPU (Arm):
+ * ========================
+ * gRPC server that allows users to subscribe to monitor events.
+ */
+service FireflyMonitor {
+	/* Subscribe for monitoring events */
+	rpc Subscribe (SubscribeReq) returns (stream MonitorRecord);
+}
+
+/* Here for future compatibility */
+message SubscribeReq {
+}
+
+/* PTP Stability state */
+enum ePTPState
+{
+	k_STATE_STABLE = 0;				/* PTP is in a stable state */
+	k_STATE_FAULTY = 1;				/* PTP is currently out of sync */
+	k_STATE_RECOVERED = 2;				/* PTP managed to recover from a sync error */
+};
+
+/* PTP Port state */
+enum ePTPPortState
+{
+	k_PORT_STATE_INACTIVE = 0;			/* PTP port is in an inactive state */
+	k_PORT_STATE_UNCALIBRATED = 1;			/* PTP port is active but unclibrated */
+	k_PORT_STATE_ACTIVE = 2;			/* PTP port is active and calibrated */
+};
+
+message SamplingValue {
+	int64 max = 1;					/* Maximal (abs) sampled value  */
+	int64 average = 2;				/* Average value across samples */
+	int64 rms = 3;					/* Standard deviation (RMS) of samples */
+}
+
+message TimestampValue {
+	uint64 raw = 1;					/* Raw timestamp (units vary based on used field) */
+	string str = 2;					/* User-friendly timestamp string */
+}
+
+message MonitorRecord {
+	bool gm_present = 1;				/* Is the Grandmaster present? */
+	ePTPState ptp_stability = 2;			/* Stability state of the PTP */
+	TimestampValue ptp_time = 3;			/* The accurate timestamp (nanoseconds) */
+	TimestampValue sys_time = 4;			/* The system's time (seconds) */
+	uint32 error_count = 5;				/* Number of errors we encountered thus far */
+	TimestampValue last_error_time = 6;		/* Timestamp for the last encountered error (seconds) */
+	string gm_identity = 7;				/* Grandmaster identity */
+	string port_identity = 8;			/* Port identity */
+	SamplingValue master_offset = 9;		/* Offset from the master clock (in nano seconds) */
+	int64 current_utc_offset = 10;			/* Current offset from UTC */
+	bool time_traceable = 11;			/* PTP timeTraceable property */
+	bool frequency_traceable = 12;			/* PTP frequencyTraceable property */
+	uint32 gm_priority1 = 13;			/* Priority1 field of the Grandmaster clock */
+	uint32 gm_clock_class = 14;			/* Clock class of the Grandmaster clock */
+	uint32 gm_clock_accuracy = 15;			/* Clock accuracy of the Grandmaster clock */
+	uint32 gm_priority2 = 16;			/* Priority2 field of the Grandmaster clock */
+	uint32 gm_offset_scaled_log_variance = 17;	/* Offset scaled log variance of the Grandmaster clock */
+	uint32 domain_number = 18;			/* The PTP domainNumber value */
+	ePTPPortState port_state = 19;			/*  The effective PTP port state of the most active port */
+	TimestampValue adjusted_ptp_time = 20;		/* UTC-Adjusted accurate timestamp (nanoseconds) */
+	bool tai_timescale = 21;			/* Are we working in TAI (PTP) timescale? Or in UTC? */
+}
